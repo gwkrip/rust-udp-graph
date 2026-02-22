@@ -1,289 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>UDP Monitor</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg:     #050a0f;
-            --panel:  #0a1520;
-            --border: #0d2a3d;
-            --accent: #00d4ff;
-            --accent2:#00ff9d;
-            --danger: #ff4d6d;
-            --text:   #cce8f4;
-            --muted:  #3a6070;
-            --glow:   0 0 16px rgba(0,212,255,0.35);
-            --glow2:  0 0 16px rgba(0,255,157,0.35);
-        }
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UDP Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg:       #0c0c0e;
+      --surface:  #111114;
+      --panel:    #16161a;
+      --border:   #222228;
+      --border-2: #2e2e36;
+      --accent:   #6366f1;
+      --accent-dim: rgba(99,102,241,0.12);
+      --green:    #22c55e;
+      --amber:    #f59e0b;
+      --red:      #ef4444;
+      --text:     #e4e4f0;
+      --text-2:   #9898b0;
+      --text-3:   #52525e;
+      --mono:     'JetBrains Mono', monospace;
+    }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Exo 2', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Scanline overlay */
-        body::before {
-            content: '';
-            position: fixed; inset: 0;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
-            pointer-events: none;
-            z-index: 999;
-        }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
 
-        /* HEADER */
-        header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 18px 32px;
-            border-bottom: 1px solid var(--border);
-            background: linear-gradient(90deg, #050a0f 0%, #071520 50%, #050a0f 100%);
-            position: relative; z-index: 10;
-        }
-        header::after {
-            content: '';
-            position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            opacity: 0.5;
-        }
+    /* ─── HEADER ─────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      height: 52px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-shrink: 0;
+    }
 
-        .logo { display: flex; align-items: center; gap: 12px; }
-        .logo-icon {
-            width: 36px; height: 36px;
-            border: 2px solid var(--accent); border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: var(--glow);
-            animation: pulse-border 3s ease-in-out infinite;
-        }
-        @keyframes pulse-border {
-            0%,100% { box-shadow: var(--glow); }
-            50% { box-shadow: 0 0 28px rgba(0,212,255,0.6); }
-        }
-        .logo-icon svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        .logo-text { font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; }
-        .logo-text span { color: var(--muted); }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(99,102,241,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-icon svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--accent);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .logo-text {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    .logo-sep { color: var(--text-3); margin: 0 2px; }
 
-        .header-right { display: flex; align-items: center; gap: 24px; }
-        .status-pill { display: flex; align-items: center; gap: 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: var(--accent2); letter-spacing: 0.1em; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); box-shadow: var(--glow2); animation: blink 1.6s ease-in-out infinite; }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-        .clock { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--muted); letter-spacing: 0.08em; }
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--green);
+      letter-spacing: 0.06em;
+    }
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .port-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-3);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      letter-spacing: 0.04em;
+    }
+    .clock {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-3);
+      letter-spacing: 0.06em;
+      min-width: 64px;
+      text-align: right;
+    }
 
-        /* MAIN */
-        main { flex: 1; padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; }
+    /* ─── MAIN ───────────────────────────────────────── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px 28px;
+    }
 
-        /* STAT CARDS */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-        .stat-card {
-            background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-            padding: 18px 20px; position: relative; overflow: hidden;
-            transition: border-color 0.3s, transform 0.2s;
-            animation: fadeInUp 0.5s ease both;
-        }
-        .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--accent); opacity: 0.7; }
-        .stat-card:nth-child(1) { animation-delay: 0.05s; }
-        .stat-card:nth-child(2)::before { background: var(--accent2); } .stat-card:nth-child(2) { animation-delay: 0.1s; }
-        .stat-card:nth-child(3)::before { background: #f9c74f; }       .stat-card:nth-child(3) { animation-delay: 0.15s; }
-        .stat-card:nth-child(4)::before { background: var(--danger); } .stat-card:nth-child(4) { animation-delay: 0.2s; }
+    /* ─── STAT CARDS ─────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
 
-        .stat-label { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-        .stat-value { font-family: 'Share Tech Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--text); line-height: 1; }
-        .stat-value span { font-size: 0.85rem; color: var(--muted); margin-left: 5px; }
-        .stat-sub { font-size: 0.7rem; color: var(--muted); margin-top: 8px; }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: var(--border-2); }
 
-        /* CHART PANEL */
-        .chart-panel {
-            background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-            padding: 24px; position: relative; flex: 1; display: flex; flex-direction: column; gap: 16px;
-            animation: fadeInUp 0.5s 0.25s ease both;
-        }
-        .chart-panel::before {
-            content: ''; position: absolute; inset: 0;
-            background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.04) 0%, transparent 70%);
-            border-radius: 10px; pointer-events: none;
-        }
-        .chart-header { display: flex; align-items: flex-start; justify-content: space-between; }
-        .chart-title { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
-        .chart-title strong { display: block; font-size: 1rem; color: var(--text); letter-spacing: 0.04em; font-weight: 600; margin-top: 3px; }
-        .chart-legend { display: flex; align-items: center; gap: 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--accent); }
-        .legend-line { width: 24px; height: 2px; background: var(--accent); box-shadow: 0 0 6px var(--accent); border-radius: 2px; }
-        .chart-wrap { position: relative; flex: 1; min-height: 240px; }
-        canvas#chart { width: 100% !important; height: 100% !important; }
+    .stat-accent {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 2px;
+    }
+    .stat-card:nth-child(1) .stat-accent { background: var(--accent); }
+    .stat-card:nth-child(2) .stat-accent { background: var(--green); }
+    .stat-card:nth-child(3) .stat-accent { background: var(--amber); }
+    .stat-card:nth-child(4) .stat-accent { background: var(--text-3); }
 
-        /* BOTTOM BAR */
-        .bottom-bar {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 32px; border-top: 1px solid var(--border);
-            font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em;
-        }
-        .conn-status { display: flex; align-items: center; gap: 8px; }
-        .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--danger); transition: background 0.4s, box-shadow 0.4s; }
-        .conn-dot.connected { background: var(--accent2); box-shadow: var(--glow2); }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 12px;
+    }
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+    }
+    .stat-unit {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-3);
+    }
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 10px;
+    }
 
-        @keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-    </style>
+    /* ─── CHART PANEL ────────────────────────────────── */
+    .chart-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 22px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 300px;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .chart-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .chart-eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .chart-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .legend-swatch {
+      width: 12px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--accent);
+      opacity: 0.8;
+    }
+
+    .chart-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 200px;
+    }
+    canvas#chart { width: 100% !important; height: 100% !important; }
+
+    /* ─── FOOTER ─────────────────────────────────────── */
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 38px;
+      padding: 0 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .conn-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .conn-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      transition: background 0.3s;
+    }
+    .conn-dot.connected { background: var(--green); }
+    .footer-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    #last-update {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+  </style>
 </head>
 <body>
 
 <header>
-    <div class="logo">
-        <div class="logo-icon">
-            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
-        <div class="logo-text">UDP<span>/</span>Monitor</div>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     </div>
-    <div class="header-right">
-        <div class="status-pill"><div class="status-dot"></div>LIVE · PORT 8125</div>
-        <div class="clock" id="clock">--:--:--</div>
-    </div>
+    <div class="logo-text">udp<span class="logo-sep">/</span>monitor</div>
+  </div>
+  <div class="header-meta">
+
+  </div>
 </header>
 
 <main>
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Current RPS</div>
-            <div class="stat-value" id="val-current">—<span>rps</span></div>
-            <div class="stat-sub">Last received value</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Peak RPS</div>
-            <div class="stat-value" id="val-peak">—<span>rps</span></div>
-            <div class="stat-sub">Session maximum</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Average RPS</div>
-            <div class="stat-value" id="val-avg">—<span>rps</span></div>
-            <div class="stat-sub">Rolling average</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Data Points</div>
-            <div class="stat-value" id="val-count">0<span>pts</span></div>
-            <div class="stat-sub">Current packet size</div>
-        </div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-accent"></div>
+      <div class="stat-label">Current RPS</div>
+      <div class="stat-value" id="val-current">—<span class="stat-unit">rps</span></div>
+      <div class="stat-sub">Last received</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-accent"></div>
+      <div class="stat-label">Peak RPS</div>
+      <div class="stat-value" id="val-peak">—<span class="stat-unit">rps</span></div>
+      <div class="stat-sub">Session maximum</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-accent"></div>
+      <div class="stat-label">Avg RPS</div>
+      <div class="stat-value" id="val-avg">—<span class="stat-unit">rps</span></div>
+      <div class="stat-sub">Rolling average</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-accent"></div>
+      <div class="stat-label">Data Points</div>
+      <div class="stat-value" id="val-count">0<span class="stat-unit">pts</span></div>
+      <div class="stat-sub">Current buffer size</div>
+    </div>
+  </div>
 
-    <div class="chart-panel">
-        <div class="chart-header">
-            <div class="chart-title">Telemetry Stream<strong>Requests Per Second</strong></div>
-            <div class="chart-legend"><div class="legend-line"></div>RPS · 1s interval</div>
-        </div>
-        <div class="chart-wrap"><canvas id="chart"></canvas></div>
+  <div class="chart-panel">
+    <div class="chart-header">
+      <div class="chart-title">
+        <div class="chart-eyebrow">Telemetry</div>
+        <div class="chart-name">Requests Per Second</div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-swatch"></div>
+        RPS · 1s interval
+      </div>
     </div>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+  </div>
 </main>
 
-<div class="bottom-bar">
-    <div class="conn-status"><div class="conn-dot" id="conn-dot"></div><span id="conn-label">DISCONNECTED</span></div>
-    <div>WS · ws://&lt;host&gt;/ws/</div>
-    <div id="last-update">Last update: —</div>
-</div>
+<footer>
+  <div class="conn-status">
+    <div class="conn-dot" id="conn-dot"></div>
+    <span id="conn-label">Disconnected</span>
+  </div>
+  <div class="footer-meta">ws://&lt;host&gt;/ws/</div>
+  <div id="last-update">—</div>
+</footer>
 
 <script>
-    // Clock
-    setInterval(() => { document.getElementById('clock').textContent = new Date().toTimeString().slice(0,8); }, 1000);
-    document.getElementById('clock').textContent = new Date().toTimeString().slice(0,8);
+  // Chart setup
+  const MAX_HISTORY = 60;
+  let history = [], peakVal = 0;
+  const ctx = document.getElementById('chart').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 280);
+  grad.addColorStop(0, 'rgba(99,102,241,0.18)');
+  grad.addColorStop(1, 'rgba(99,102,241,0.00)');
 
-    // Chart
-    const MAX_HISTORY = 60;
-    let history = [], peakVal = 0;
-    const ctx = document.getElementById('chart').getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, 0, 300);
-    grad.addColorStop(0, 'rgba(0,212,255,0.22)');
-    grad.addColorStop(1, 'rgba(0,212,255,0.00)');
-
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'RPS', data: [],
-                borderColor: '#00d4ff', backgroundColor: grad,
-                borderWidth: 2, pointRadius: 0, pointHoverRadius: 5,
-                pointHoverBackgroundColor: '#00d4ff', pointHoverBorderColor: '#fff',
-                tension: 0.4, fill: true,
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            animation: { duration: 300 },
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#0a1520', borderColor: '#0d2a3d', borderWidth: 1,
-                    titleColor: '#3a6070', bodyColor: '#cce8f4',
-                    titleFont: { family: "'Share Tech Mono'" },
-                    bodyFont: { family: "'Share Tech Mono'", size: 13 },
-                    padding: 10,
-                    callbacks: { label: c => ` ${c.parsed.y} rps` }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { color: 'rgba(13,42,61,0.6)', drawBorder: false },
-                    ticks: { color: '#3a6070', font: { family: "'Share Tech Mono'", size: 10 }, maxTicksLimit: 10 }
-                },
-                y: {
-                    grid: { color: 'rgba(13,42,61,0.6)', drawBorder: false },
-                    ticks: { color: '#3a6070', font: { family: "'Share Tech Mono'", size: 10 }, callback: v => v + ' rps' },
-                    beginAtZero: true
-                }
-            }
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'RPS',
+        data: [],
+        borderColor: '#6366f1',
+        backgroundColor: grad,
+        borderWidth: 1.5,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: '#6366f1',
+        pointHoverBorderColor: '#0c0c0e',
+        pointHoverBorderWidth: 2,
+        tension: 0.4,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 200 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#16161a',
+          borderColor: '#2e2e36',
+          borderWidth: 1,
+          titleColor: '#52525e',
+          bodyColor: '#e4e4f0',
+          titleFont: { family: "'JetBrains Mono'", size: 11 },
+          bodyFont: { family: "'JetBrains Mono'", size: 12 },
+          padding: 10,
+          callbacks: { label: c => ` ${c.parsed.y} rps` }
         }
-    });
-
-    // Stats
-    function updateStats(arr) {
-        if (!arr.length) return;
-        const cur = arr[arr.length - 1];
-        const avg = Math.round(arr.reduce((a,b) => a+b, 0) / arr.length);
-        if (cur > peakVal) peakVal = cur;
-        const fmt = n => n === undefined ? '—' : n.toLocaleString();
-        document.getElementById('val-current').innerHTML = `${fmt(cur)}<span>rps</span>`;
-        document.getElementById('val-peak').innerHTML    = `${fmt(peakVal)}<span>rps</span>`;
-        document.getElementById('val-avg').innerHTML     = `${fmt(avg)}<span>rps</span>`;
-        document.getElementById('val-count').innerHTML   = `${arr.length}<span>pts</span>`;
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(34,34,40,0.8)', drawBorder: false },
+          ticks: { color: '#52525e', font: { family: "'JetBrains Mono'", size: 10 }, maxTicksLimit: 8 }
+        },
+        y: {
+          grid: { color: 'rgba(34,34,40,0.8)', drawBorder: false },
+          ticks: {
+            color: '#52525e',
+            font: { family: "'JetBrains Mono'", size: 10 },
+            callback: v => v + ' rps'
+          },
+          beginAtZero: true
+        }
+      }
     }
+  });
 
-    function pushHistory(arr) {
-        const ts = new Date().toTimeString().slice(0,8);
-        arr.forEach((v, i) => history.push({ label: i === 0 ? ts : '', value: v }));
-        if (history.length > MAX_HISTORY) history = history.slice(-MAX_HISTORY);
-        chart.data.labels = history.map(h => h.label);
-        chart.data.datasets[0].data = history.map(h => h.value);
-        chart.update();
-    }
+  // Stats
+  function updateStats(arr) {
+    if (!arr.length) return;
+    const cur = arr[arr.length - 1];
+    const avg = Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+    if (cur > peakVal) peakVal = cur;
+    const fmt = n => (n === undefined || n === null) ? '—' : n.toLocaleString();
+    document.getElementById('val-current').innerHTML = `${fmt(cur)}<span class="stat-unit">rps</span>`;
+    document.getElementById('val-peak').innerHTML    = `${fmt(peakVal)}<span class="stat-unit">rps</span>`;
+    document.getElementById('val-avg').innerHTML     = `${fmt(avg)}<span class="stat-unit">rps</span>`;
+    document.getElementById('val-count').innerHTML   = `${arr.length}<span class="stat-unit">pts</span>`;
+  }
 
-    // WebSocket with auto-reconnect
-    const connDot = document.getElementById('conn-dot');
-    const connLabel = document.getElementById('conn-label');
-    function setConn(state) {
-        connDot.classList.toggle('connected', state);
-        connLabel.textContent = state ? 'CONNECTED' : 'DISCONNECTED';
-    }
+  function pushHistory(arr) {
+    const ts = new Date().toTimeString().slice(0, 8);
+    arr.forEach((v, i) => history.push({ label: i === 0 ? ts : '', value: v }));
+    if (history.length > MAX_HISTORY) history = history.slice(-MAX_HISTORY);
+    chart.data.labels = history.map(h => h.label);
+    chart.data.datasets[0].data = history.map(h => h.value);
+    chart.update();
+  }
 
-    function connect() {
-        const ws = new WebSocket("ws://" + window.location.host + "/ws/");
-        ws.onopen = () => setConn(true);
-        ws.onmessage = e => {
-            const arr = JSON.parse(e.data);
-            updateStats(arr);
-            pushHistory(arr);
-            document.getElementById('last-update').textContent = 'Last update: ' + new Date().toTimeString().slice(0,8);
-        };
-        ws.onclose = () => { setConn(false); setTimeout(connect, 3000); };
-        ws.onerror = () => ws.close();
-    }
-    connect();
+  // WebSocket with auto-reconnect
+  const connDot   = document.getElementById('conn-dot');
+  const connLabel = document.getElementById('conn-label');
+  const lastUp    = document.getElementById('last-update');
+
+  function setConn(state) {
+    connDot.classList.toggle('connected', state);
+    connLabel.textContent = state ? 'Connected' : 'Disconnected';
+  }
+
+  function connect() {
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/');
+    ws.onopen    = () => setConn(true);
+    ws.onmessage = e => {
+      const arr = JSON.parse(e.data);
+      updateStats(arr);
+      pushHistory(arr);
+      lastUp.textContent = 'Updated ' + new Date().toTimeString().slice(0, 8);
+    };
+    ws.onclose = () => { setConn(false); setTimeout(connect, 3000); };
+    ws.onerror = () => ws.close();
+  }
+  connect();
 </script>
 </body>
 </html>
