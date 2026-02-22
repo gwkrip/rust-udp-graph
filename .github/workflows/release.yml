@@ -1,0 +1,144 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  BINARY_NAME: rust_udp_graph
+
+jobs:
+  build:
+    name: Build · ${{ matrix.artifact }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target:   x86_64-unknown-linux-gnu
+            artifact: rust_udp_graph-linux-x86_64-gnu
+            apt_pkg:  ""
+
+          - target:   x86_64-unknown-linux-musl
+            artifact: rust_udp_graph-linux-x86_64-musl
+            apt_pkg:  musl-tools
+
+          - target:   aarch64-unknown-linux-gnu
+            artifact: rust_udp_graph-linux-aarch64-gnu
+            apt_pkg:  gcc-aarch64-linux-gnu
+
+          - target:   aarch64-unknown-linux-musl
+            artifact: rust_udp_graph-linux-aarch64-musl
+            apt_pkg:  gcc-aarch64-linux-gnu
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation dependencies
+        if: matrix.apt_pkg != ''
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ${{ matrix.apt_pkg }}
+
+      - name: Configure linker (aarch64-gnu)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - name: Configure linker (aarch64-musl)
+        if: matrix.target == 'aarch64-unknown-linux-musl'
+        run: |
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-${{ matrix.target }}-cargo-
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package
+        run: |
+          cp target/${{ matrix.target }}/release/${{ env.BINARY_NAME }} ${{ matrix.artifact }}
+          tar -czf ${{ matrix.artifact }}.tar.gz ${{ matrix.artifact }} templates/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.tar.gz
+          retention-days: 1
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          merge-multiple: true
+
+      - name: Extract changelog
+        id: changelog
+        run: |
+          VERSION="${{ github.ref_name }}"
+          BODY=$(awk "/^## \[${VERSION}\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md 2>/dev/null || echo "See commit history for changes.")
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## UDP Monitor ${{ github.ref_name }}
+
+            ${{ steps.changelog.outputs.BODY }}
+
+            ---
+
+            ### Installation
+
+            ```bash
+            tar -xzf rust_udp_graph-linux-<arch>-<libc>.tar.gz
+            ./rust_udp_graph-linux-<arch>-<libc>
+            ```
+
+            | Archive | Arch | libc |
+            |---|---|---|
+            | `rust_udp_graph-linux-x86_64-gnu.tar.gz` | x86_64 | glibc |
+            | `rust_udp_graph-linux-x86_64-musl.tar.gz` | x86_64 | musl (static) |
+            | `rust_udp_graph-linux-aarch64-gnu.tar.gz` | ARM64 | glibc |
+            | `rust_udp_graph-linux-aarch64-musl.tar.gz` | ARM64 | musl (static) |
+
+            - HTTP → `http://0.0.0.0:8080`
+            - UDP  → `0.0.0.0:8125`
+          files: dist/**
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
