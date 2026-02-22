@@ -1,4 +1,4 @@
-FROM rust:1.82-slim AS builder
+FROM rust:nightly-slim AS builder
 
 WORKDIR /app
 
@@ -11,7 +11,9 @@ RUN mkdir src && echo "fn main() {}" > src/main.rs \
     && sed -i 's|path = "src/main.rs"|path = "main.rs"|' Cargo.toml
 
 COPY main.rs ./
-RUN touch main.rs && cargo build --release
+COPY templates ./templates
+
+RUN cargo build --release
 
 FROM debian:bookworm-slim AS runtime
 
@@ -24,7 +26,7 @@ RUN useradd -m -u 1001 appuser
 WORKDIR /app
 
 COPY --from=builder /app/target/release/rust_udp_graph ./rust_udp_graph
-COPY templates ./templates
+COPY --from=builder /app/templates ./templates
 
 RUN chown -R appuser:appuser /app
 
