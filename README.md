@@ -3,8 +3,8 @@
 Real-time UDP telemetry dashboard built with Rust + Actix-Web.  
 Receives UDP packets, parses RPS metrics, and streams them live to a browser via WebSocket.
 
-[![CI](https://github.com/your-username/rust-udp-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/rust-udp-graph/actions/workflows/ci.yml)
-[![Release](https://github.com/your-username/rust-udp-graph/actions/workflows/release.yml/badge.svg)](https://github.com/your-username/rust-udp-graph/releases)
+[![CI](https://github.com/gwkrip/rust-udp-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/rust-udp-graph/actions/workflows/ci.yml)
+[![Release](https://github.com/gwkrip/rust-udp-graph/actions/workflows/release.yml/badge.svg)](https://github.com/your-username/rust-udp-graph/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
