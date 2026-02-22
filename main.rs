@@ -16,7 +16,7 @@ async fn main() -> std::io::Result<()> {
 
     let udp_data = data.clone();
     tokio::spawn(async move {
-        let socket = UdpSocket::bind("0.0.0.0:8125").await.unwrap();
+        let socket = UdpSocket::bind("vrypt-server.railway.internal:8125").await.unwrap();
         let mut buf = [0u8; 1024];
 
         loop {
