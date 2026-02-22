@@ -1,3 +1,5 @@
+use actix::ActorContext;
+use actix::AsyncContext;
 use actix_web::{get, web, App, HttpServer, HttpResponse, Responder};
 use actix_web::web::Data;
 use actix_web_actors::ws;
@@ -84,7 +86,7 @@ impl actix::Actor for MyWs {
     type Context = ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        ctx.run_interval(std::time::Duration::from_secs(1), |act, ctx| {
+        ctx.run_interval(std::time::Duration::from_secs(1), |act, ctx: &mut ws::WebsocketContext<Self>| {
             let shared = act.data.lock().unwrap();
             let msg = serde_json::to_string(&*shared).unwrap();
             ctx.text(msg);
