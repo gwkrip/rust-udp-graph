@@ -3,32 +3,73 @@ use actix::AsyncContext;
 use actix_web::{get, web, App, HttpServer, HttpResponse, Responder};
 use actix_web::web::Data;
 use actix_web_actors::ws;
+use serde::{Serialize, Deserialize};
 use std::sync::{Arc, Mutex};
 use tera::Tera;
 use tokio::net::UdpSocket;
 use std::str;
 
-type SharedData = Arc<Mutex<Vec<u32>>>;
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+struct VryptMetrics {
+    pub rps: u64,
+    pub bytes_sent: u64,
+    pub bytes_received: u64,
+    pub active_connections: u64,
+    pub total_accepted: u64,
+    pub conn_timeouts: u64,
+    pub dropped_token_exhausted: u64,
+    pub dropped_buf_exhausted: u64,
+    pub errors_read: u64,
+    pub errors_write: u64,
+    pub errors_request_too_large: u64,
+}
+
+type SharedData = Arc<Mutex<VryptMetrics>>;
+
+fn parse_statsd(msg: &str) -> VryptMetrics {
+    let mut m = VryptMetrics::default();
+    for line in msg.lines() {
+        let line = line.trim();
+        if line.is_empty() { continue; }
+        let parts: Vec<&str> = line.splitn(2, ':').collect();
+        if parts.len() != 2 { continue; }
+        let name = parts[0];
+        let value_str = parts[1].split('|').next().unwrap_or("0");
+        let value: u64 = value_str.parse().unwrap_or(0);
+
+        match name {
+            "vrypt.rps"                        => m.rps = value,
+            "vrypt.bytes_sent"                 => m.bytes_sent = value,
+            "vrypt.bytes_received"             => m.bytes_received = value,
+            "vrypt.active_connections"         => m.active_connections = value,
+            "vrypt.total_accepted"             => m.total_accepted = value,
+            "vrypt.conn_timeouts"              => m.conn_timeouts = value,
+            "vrypt.dropped.token_exhausted"    => m.dropped_token_exhausted = value,
+            "vrypt.dropped.buf_exhausted"      => m.dropped_buf_exhausted = value,
+            "vrypt.errors.read"                => m.errors_read = value,
+            "vrypt.errors.write"               => m.errors_write = value,
+            "vrypt.errors.request_too_large"   => m.errors_request_too_large = value,
+            _ => {}
+        }
+    }
+    m
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let data: SharedData = Arc::new(Mutex::new(vec![]));
+    let data: SharedData = Arc::new(Mutex::new(VryptMetrics::default()));
 
     let udp_data = data.clone();
     tokio::spawn(async move {
         let socket = UdpSocket::bind("vrypt-server.railway.internal:8125").await.unwrap();
-        let mut buf = [0u8; 1024];
+        let mut buf = [0u8; 4096];
 
         loop {
             if let Ok((len, _addr)) = socket.recv_from(&mut buf).await {
                 if let Ok(msg) = str::from_utf8(&buf[..len]) {
-                    let nums: Vec<u32> = msg.split('|')
-                        .filter_map(|s| s.split(':').nth(1))
-                        .filter_map(|v| v.parse().ok())
-                        .collect();
-
+                    let metrics = parse_statsd(msg);
                     let mut shared = udp_data.lock().unwrap();
-                    *shared = nums;
+                    *shared = metrics;
                 }
             }
         }
