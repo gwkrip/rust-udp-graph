@@ -3,26 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UDP Monitor</title>
+  <title>Vrypt Monitor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg:       #0c0c0e;
-      --surface:  #111114;
-      --panel:    #16161a;
-      --border:   #222228;
-      --border-2: #2e2e36;
-      --accent:   #6366f1;
+      --bg:         #0c0c0e;
+      --surface:    #111114;
+      --panel:      #16161a;
+      --border:     #222228;
+      --border-2:   #2e2e36;
+      --accent:     #6366f1;
       --accent-dim: rgba(99,102,241,0.12);
-      --green:    #22c55e;
-      --amber:    #f59e0b;
-      --red:      #ef4444;
-      --text:     #e4e4f0;
-      --text-2:   #9898b0;
-      --text-3:   #52525e;
-      --mono:     'JetBrains Mono', monospace;
+      --green:      #22c55e;
+      --amber:      #f59e0b;
+      --red:        #ef4444;
+      --blue:       #38bdf8;
+      --purple:     #a855f7;
+      --text:       #e4e4f0;
+      --text-2:     #9898b0;
+      --text-3:     #52525e;
+      --mono:       'JetBrains Mono', monospace;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,96 +55,42 @@
       flex-shrink: 0;
     }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .logo { display: flex; align-items: center; gap: 10px; }
     .logo-icon {
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       border-radius: 6px;
       background: var(--accent-dim);
       border: 1px solid rgba(99,102,241,0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
-    .logo-icon svg {
-      width: 14px;
-      height: 14px;
-      stroke: var(--accent);
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-    .logo-text {
-      font-family: var(--mono);
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      letter-spacing: 0.04em;
-    }
+    .logo-icon svg { width: 14px; height: 14px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .logo-text { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); letter-spacing: 0.04em; }
     .logo-sep { color: var(--text-3); margin: 0 2px; }
 
-    .header-meta {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--green);
-      letter-spacing: 0.06em;
-    }
-    .live-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    .port-tag {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-3);
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 2px 8px;
-      letter-spacing: 0.04em;
-    }
-    .clock {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text-3);
-      letter-spacing: 0.06em;
-      min-width: 64px;
-      text-align: right;
-    }
+    .header-meta { display: flex; align-items: center; gap: 20px; }
+    .live-badge { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--green); letter-spacing: 0.06em; }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .port-tag { font-family: var(--mono); font-size: 11px; color: var(--text-3); background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; letter-spacing: 0.04em; }
+    .clock { font-family: var(--mono); font-size: 12px; color: var(--text-3); letter-spacing: 0.06em; min-width: 64px; text-align: right; }
 
     /* ─── MAIN ───────────────────────────────────────── */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 20px 28px;
+    main { flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 20px 28px; }
+
+    /* ─── SECTION LABEL ──────────────────────────────── */
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: -4px;
     }
 
     /* ─── STAT CARDS ─────────────────────────────────── */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 12px;
     }
 
@@ -157,44 +105,17 @@
     }
     .stat-card:hover { border-color: var(--border-2); }
 
-    .stat-accent {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 2px;
-    }
-    .stat-card:nth-child(1) .stat-accent { background: var(--accent); }
-    .stat-card:nth-child(2) .stat-accent { background: var(--green); }
-    .stat-card:nth-child(3) .stat-accent { background: var(--amber); }
-    .stat-card:nth-child(4) .stat-accent { background: var(--text-3); }
+    .stat-accent { position: absolute; top: 0; left: 0; width: 100%; height: 2px; }
 
-    .stat-label {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin-bottom: 12px;
-    }
-    .stat-value {
-      font-family: var(--mono);
-      font-size: 28px;
-      font-weight: 500;
-      color: var(--text);
-      line-height: 1;
-      display: flex;
-      align-items: baseline;
-      gap: 5px;
-    }
-    .stat-unit {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--text-3);
-    }
-    .stat-sub {
-      font-size: 11px;
-      color: var(--text-3);
-      margin-top: 10px;
-    }
+    .stat-label { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
+    .stat-value { font-family: var(--mono); font-size: 24px; font-weight: 500; color: var(--text); line-height: 1; display: flex; align-items: baseline; gap: 4px; }
+    .stat-unit { font-size: 11px; font-weight: 400; color: var(--text-3); }
+    .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 8px; }
+
+    /* alert coloring for errors/drops */
+    .stat-card.alert .stat-value { color: var(--red); }
+    .stat-card.warn .stat-value { color: var(--amber); }
+    .stat-card.ok .stat-value { color: var(--green); }
 
     /* ─── CHART PANEL ────────────────────────────────── */
     .chart-panel {
@@ -206,92 +127,36 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      min-height: 300px;
+      min-height: 260px;
     }
 
-    .chart-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .chart-title {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .chart-eyebrow {
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-3);
-    }
-    .chart-name {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text);
-      letter-spacing: -0.01em;
-    }
-    .chart-legend {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-3);
-    }
-    .legend-swatch {
-      width: 12px;
-      height: 3px;
-      border-radius: 2px;
-      background: var(--accent);
-      opacity: 0.8;
-    }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; }
+    .chart-title { display: flex; flex-direction: column; gap: 2px; }
+    .chart-eyebrow { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
+    .chart-name { font-size: 15px; font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+    .chart-legend { display: flex; align-items: center; gap: 14px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+    .legend-swatch { width: 12px; height: 3px; border-radius: 2px; }
 
-    .chart-wrap {
-      position: relative;
-      flex: 1;
-      min-height: 200px;
-    }
-    canvas#chart { width: 100% !important; height: 100% !important; }
+    .chart-wrap { position: relative; flex: 1; min-height: 180px; }
+    canvas { width: 100% !important; height: 100% !important; }
+
+    /* ─── TWO-COLUMN CHARTS ──────────────────────────── */
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
     /* ─── FOOTER ─────────────────────────────────────── */
     footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 38px;
-      padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 38px; padding: 0 28px;
       border-top: 1px solid var(--border);
       background: var(--surface);
       flex-shrink: 0;
     }
-    .conn-status {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-3);
-    }
-    .conn-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--red);
-      transition: background 0.3s;
-    }
+    .conn-status { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+    .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); transition: background 0.3s; }
     .conn-dot.connected { background: var(--green); }
-    .footer-meta {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-3);
-    }
-    #last-update {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-3);
-    }
+    .footer-meta { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+    #last-update { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
   </style>
 </head>
 <body>
@@ -301,54 +166,128 @@
     <div class="logo-icon">
       <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     </div>
-    <div class="logo-text">udp<span class="logo-sep">/</span>monitor</div>
+    <div class="logo-text">vrypt<span class="logo-sep">/</span>monitor</div>
   </div>
   <div class="header-meta">
-
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    <div class="port-tag">UDP :8125</div>
+    <div class="clock" id="clock">--:--:--</div>
   </div>
 </header>
 
 <main>
+
+  <!-- ── TRAFFIC ── -->
+  <div class="section-label">Traffic</div>
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-accent"></div>
+      <div class="stat-accent" style="background:var(--accent)"></div>
       <div class="stat-label">Current RPS</div>
-      <div class="stat-value" id="val-current">—<span class="stat-unit">rps</span></div>
-      <div class="stat-sub">Last received</div>
+      <div class="stat-value" id="val-rps">—<span class="stat-unit">rps</span></div>
+      <div class="stat-sub">Requests / sec</div>
     </div>
     <div class="stat-card">
-      <div class="stat-accent"></div>
-      <div class="stat-label">Peak RPS</div>
-      <div class="stat-value" id="val-peak">—<span class="stat-unit">rps</span></div>
-      <div class="stat-sub">Session maximum</div>
+      <div class="stat-accent" style="background:var(--blue)"></div>
+      <div class="stat-label">Bytes Sent</div>
+      <div class="stat-value" id="val-bsent">—<span class="stat-unit">B</span></div>
+      <div class="stat-sub">Per interval</div>
     </div>
     <div class="stat-card">
-      <div class="stat-accent"></div>
-      <div class="stat-label">Avg RPS</div>
-      <div class="stat-value" id="val-avg">—<span class="stat-unit">rps</span></div>
-      <div class="stat-sub">Rolling average</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-accent"></div>
-      <div class="stat-label">Data Points</div>
-      <div class="stat-value" id="val-count">0<span class="stat-unit">pts</span></div>
-      <div class="stat-sub">Current buffer size</div>
+      <div class="stat-accent" style="background:var(--purple)"></div>
+      <div class="stat-label">Bytes Received</div>
+      <div class="stat-value" id="val-brecv">—<span class="stat-unit">B</span></div>
+      <div class="stat-sub">Per interval</div>
     </div>
   </div>
 
-  <div class="chart-panel">
-    <div class="chart-header">
-      <div class="chart-title">
-        <div class="chart-eyebrow">Telemetry</div>
-        <div class="chart-name">Requests Per Second</div>
-      </div>
-      <div class="chart-legend">
-        <div class="legend-swatch"></div>
-        RPS · 1s interval
-      </div>
+  <!-- ── CONNECTIONS ── -->
+  <div class="section-label">Connections</div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-accent" style="background:var(--green)"></div>
+      <div class="stat-label">Active Connections</div>
+      <div class="stat-value" id="val-active">—<span class="stat-unit">conn</span></div>
+      <div class="stat-sub">Currently open</div>
     </div>
-    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+    <div class="stat-card">
+      <div class="stat-accent" style="background:var(--text-2)"></div>
+      <div class="stat-label">Total Accepted</div>
+      <div class="stat-value" id="val-accepted">—</div>
+      <div class="stat-sub">Lifetime gauge</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-accent" style="background:var(--amber)"></div>
+      <div class="stat-label">Conn Timeouts</div>
+      <div class="stat-value" id="val-timeouts">—</div>
+      <div class="stat-sub">Lifetime gauge</div>
+    </div>
   </div>
+
+  <!-- ── DROPS & ERRORS ── -->
+  <div class="section-label">Drops &amp; Errors</div>
+  <div class="stats-grid">
+    <div class="stat-card" id="card-token">
+      <div class="stat-accent" style="background:var(--red)"></div>
+      <div class="stat-label">Token Exhausted</div>
+      <div class="stat-value" id="val-token">—</div>
+      <div class="stat-sub">Dropped packets</div>
+    </div>
+    <div class="stat-card" id="card-buf">
+      <div class="stat-accent" style="background:var(--red)"></div>
+      <div class="stat-label">Buf Exhausted</div>
+      <div class="stat-value" id="val-buf">—</div>
+      <div class="stat-sub">Dropped packets</div>
+    </div>
+    <div class="stat-card" id="card-erread">
+      <div class="stat-accent" style="background:var(--red)"></div>
+      <div class="stat-label">Errors Read</div>
+      <div class="stat-value" id="val-erread">—</div>
+      <div class="stat-sub">IO errors</div>
+    </div>
+    <div class="stat-card" id="card-erwrite">
+      <div class="stat-accent" style="background:var(--red)"></div>
+      <div class="stat-label">Errors Write</div>
+      <div class="stat-value" id="val-erwrite">—</div>
+      <div class="stat-sub">IO errors</div>
+    </div>
+    <div class="stat-card" id="card-toolarge">
+      <div class="stat-accent" style="background:var(--red)"></div>
+      <div class="stat-label">Request Too Large</div>
+      <div class="stat-value" id="val-toolarge">—</div>
+      <div class="stat-sub">Oversized requests</div>
+    </div>
+  </div>
+
+  <!-- ── CHARTS ── -->
+  <div class="charts-row">
+    <div class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title">
+          <div class="chart-eyebrow">Telemetry · 60s window</div>
+          <div class="chart-name">Requests Per Second</div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--accent)"></div>RPS</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-rps"></canvas></div>
+    </div>
+
+    <div class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title">
+          <div class="chart-eyebrow">Telemetry · 60s window</div>
+          <div class="chart-name">Bytes Throughput</div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--blue)"></div>Sent</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--purple)"></div>Recv</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-bytes"></canvas></div>
+    </div>
+  </div>
+
 </main>
 
 <footer>
@@ -361,93 +300,127 @@
 </footer>
 
 <script>
-  // Chart setup
-  const MAX_HISTORY = 60;
-  let history = [], peakVal = 0;
-  const ctx = document.getElementById('chart').getContext('2d');
-  const grad = ctx.createLinearGradient(0, 0, 0, 280);
-  grad.addColorStop(0, 'rgba(99,102,241,0.18)');
-  grad.addColorStop(1, 'rgba(99,102,241,0.00)');
+  // ── Clock ──────────────────────────────────────────────────
+  setInterval(() => {
+    document.getElementById('clock').textContent = new Date().toTimeString().slice(0,8);
+  }, 1000);
 
-  const chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [{
-        label: 'RPS',
-        data: [],
-        borderColor: '#6366f1',
-        backgroundColor: grad,
-        borderWidth: 1.5,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        pointHoverBackgroundColor: '#6366f1',
-        pointHoverBorderColor: '#0c0c0e',
-        pointHoverBorderWidth: 2,
-        tension: 0.4,
-        fill: true,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 200 },
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#16161a',
-          borderColor: '#2e2e36',
-          borderWidth: 1,
-          titleColor: '#52525e',
-          bodyColor: '#e4e4f0',
-          titleFont: { family: "'JetBrains Mono'", size: 11 },
-          bodyFont: { family: "'JetBrains Mono'", size: 12 },
-          padding: 10,
-          callbacks: { label: c => ` ${c.parsed.y} rps` }
-        }
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(34,34,40,0.8)', drawBorder: false },
-          ticks: { color: '#52525e', font: { family: "'JetBrains Mono'", size: 10 }, maxTicksLimit: 8 }
+  // ── Chart factory ──────────────────────────────────────────
+  const MAX_HISTORY = 60;
+
+  function makeChart(id, datasets) {
+    const ctx = document.getElementById(id).getContext('2d');
+    return new Chart(ctx, {
+      type: 'line',
+      data: { labels: Array(MAX_HISTORY).fill(''), datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 200 },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#16161a',
+            borderColor: '#2e2e36',
+            borderWidth: 1,
+            titleColor: '#52525e',
+            bodyColor: '#e4e4f0',
+            titleFont: { family: "'JetBrains Mono'", size: 11 },
+            bodyFont: { family: "'JetBrains Mono'", size: 12 },
+            padding: 10,
+          }
         },
-        y: {
-          grid: { color: 'rgba(34,34,40,0.8)', drawBorder: false },
-          ticks: {
-            color: '#52525e',
-            font: { family: "'JetBrains Mono'", size: 10 },
-            callback: v => v + ' rps'
+        scales: {
+          x: {
+            grid: { color: 'rgba(34,34,40,0.6)', drawBorder: false },
+            ticks: { color: '#52525e', font: { family: "'JetBrains Mono'", size: 10 }, maxTicksLimit: 6 }
           },
-          beginAtZero: true
+          y: {
+            grid: { color: 'rgba(34,34,40,0.6)', drawBorder: false },
+            ticks: { color: '#52525e', font: { family: "'JetBrains Mono'", size: 10 } },
+            beginAtZero: true
+          }
         }
       }
+    });
+  }
+
+  function gradient(ctx, color) {
+    const g = ctx.createLinearGradient(0,0,0,220);
+    g.addColorStop(0, color.replace(')', ',0.18)').replace('rgb', 'rgba'));
+    g.addColorStop(1, color.replace(')', ',0.00)').replace('rgb', 'rgba'));
+    return g;
+  }
+
+  // RPS chart
+  const rpsCtx = document.getElementById('chart-rps').getContext('2d');
+  const rpsGrad = (function(){ const g=rpsCtx.createLinearGradient(0,0,0,220); g.addColorStop(0,'rgba(99,102,241,0.18)'); g.addColorStop(1,'rgba(99,102,241,0.00)'); return g; })();
+  const chartRps = makeChart('chart-rps', [{
+    label: 'RPS',
+    data: Array(MAX_HISTORY).fill(null),
+    borderColor: '#6366f1',
+    backgroundColor: rpsGrad,
+    borderWidth: 1.5,
+    pointRadius: 0,
+    pointHoverRadius: 4,
+    tension: 0.4,
+    fill: true,
+  }]);
+
+  // Bytes chart
+  const bCtx = document.getElementById('chart-bytes').getContext('2d');
+  const sentGrad = (function(){ const g=bCtx.createLinearGradient(0,0,0,220); g.addColorStop(0,'rgba(56,189,248,0.15)'); g.addColorStop(1,'rgba(56,189,248,0.00)'); return g; })();
+  const recvGrad = (function(){ const g=bCtx.createLinearGradient(0,0,0,220); g.addColorStop(0,'rgba(168,85,247,0.13)'); g.addColorStop(1,'rgba(168,85,247,0.00)'); return g; })();
+  const chartBytes = makeChart('chart-bytes', [
+    {
+      label: 'Sent',
+      data: Array(MAX_HISTORY).fill(null),
+      borderColor: '#38bdf8',
+      backgroundColor: sentGrad,
+      borderWidth: 1.5,
+      pointRadius: 0,
+      tension: 0.4,
+      fill: true,
+    },
+    {
+      label: 'Received',
+      data: Array(MAX_HISTORY).fill(null),
+      borderColor: '#a855f7',
+      backgroundColor: recvGrad,
+      borderWidth: 1.5,
+      pointRadius: 0,
+      tension: 0.4,
+      fill: true,
     }
-  });
+  ]);
 
-  // Stats
-  function updateStats(arr) {
-    if (!arr.length) return;
-    const cur = arr[arr.length - 1];
-    const avg = Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
-    if (cur > peakVal) peakVal = cur;
-    const fmt = n => (n === undefined || n === null) ? '—' : n.toLocaleString();
-    document.getElementById('val-current').innerHTML = `${fmt(cur)}<span class="stat-unit">rps</span>`;
-    document.getElementById('val-peak').innerHTML    = `${fmt(peakVal)}<span class="stat-unit">rps</span>`;
-    document.getElementById('val-avg').innerHTML     = `${fmt(avg)}<span class="stat-unit">rps</span>`;
-    document.getElementById('val-count').innerHTML   = `${arr.length}<span class="stat-unit">pts</span>`;
+  // ── History ring buffers ───────────────────────────────────
+  let labels = Array(MAX_HISTORY).fill('');
+
+  function pushRing(chart, dsIdx, value) {
+    const d = chart.data.datasets[dsIdx].data;
+    d.shift(); d.push(value);
+  }
+  function pushLabel(chart, ts) {
+    const l = chart.data.labels;
+    l.shift(); l.push(ts);
   }
 
-  function pushHistory(arr) {
-    const ts = new Date().toTimeString().slice(0, 8);
-    arr.forEach((v, i) => history.push({ label: i === 0 ? ts : '', value: v }));
-    if (history.length > MAX_HISTORY) history = history.slice(-MAX_HISTORY);
-    chart.data.labels = history.map(h => h.label);
-    chart.data.datasets[0].data = history.map(h => h.value);
-    chart.update();
+  // ── Stat helpers ───────────────────────────────────────────
+  const fmt = n => (n === undefined || n === null) ? '—' : n.toLocaleString();
+
+  function setCard(id, value, unit) {
+    document.getElementById(id).innerHTML = `${fmt(value)}<span class="stat-unit">${unit}</span>`;
   }
 
-  // WebSocket with auto-reconnect
+  function colorCard(cardId, value) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    card.classList.toggle('alert', value > 0);
+  }
+
+  // ── WebSocket ──────────────────────────────────────────────
   const connDot   = document.getElementById('conn-dot');
   const connLabel = document.getElementById('conn-label');
   const lastUp    = document.getElementById('last-update');
@@ -457,17 +430,49 @@
     connLabel.textContent = state ? 'Connected' : 'Disconnected';
   }
 
+  function handleMetrics(m) {
+    const ts = new Date().toTimeString().slice(0, 8);
+
+    // Stat cards
+    setCard('val-rps',      m.rps,               'rps');
+    setCard('val-bsent',    m.bytes_sent,         'B');
+    setCard('val-brecv',    m.bytes_received,     'B');
+    setCard('val-active',   m.active_connections, 'conn');
+    setCard('val-accepted', m.total_accepted,     '');
+    setCard('val-timeouts', m.conn_timeouts,      '');
+    setCard('val-token',    m.dropped_token_exhausted, '');
+    setCard('val-buf',      m.dropped_buf_exhausted,   '');
+    setCard('val-erread',   m.errors_read,             '');
+    setCard('val-erwrite',  m.errors_write,            '');
+    setCard('val-toolarge', m.errors_request_too_large,'');
+
+    // Alert coloring
+    colorCard('card-token',    m.dropped_token_exhausted);
+    colorCard('card-buf',      m.dropped_buf_exhausted);
+    colorCard('card-erread',   m.errors_read);
+    colorCard('card-erwrite',  m.errors_write);
+    colorCard('card-toolarge', m.errors_request_too_large);
+
+    // RPS chart
+    pushLabel(chartRps, ts);
+    pushRing(chartRps, 0, m.rps);
+    chartRps.update();
+
+    // Bytes chart
+    pushLabel(chartBytes, ts);
+    pushRing(chartBytes, 0, m.bytes_sent);
+    pushRing(chartBytes, 1, m.bytes_received);
+    chartBytes.update();
+
+    lastUp.textContent = 'Updated ' + ts;
+  }
+
   function connect() {
     const ws = new WebSocket('ws://' + window.location.host + '/ws/');
     ws.onopen    = () => setConn(true);
-    ws.onmessage = e => {
-      const arr = JSON.parse(e.data);
-      updateStats(arr);
-      pushHistory(arr);
-      lastUp.textContent = 'Updated ' + new Date().toTimeString().slice(0, 8);
-    };
-    ws.onclose = () => { setConn(false); setTimeout(connect, 3000); };
-    ws.onerror = () => ws.close();
+    ws.onmessage = e => { handleMetrics(JSON.parse(e.data)); };
+    ws.onclose   = () => { setConn(false); setTimeout(connect, 3000); };
+    ws.onerror   = () => ws.close();
   }
   connect();
 </script>
